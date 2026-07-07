@@ -1,5 +1,36 @@
 pipeline {
-    agent any
+
+    agent {
+        kubernetes {
+            yaml '''
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: kubectl-agent
+spec:
+  serviceAccountName: jenkins
+
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - cat
+    tty: true
+'''
+        }
+    }
+
+    stages {
+        stage('Test') {
+            steps {
+                container('kubectl') {
+                    sh 'kubectl get nodes'
+                }
+            }
+        }
+    }
+}
 
     stages {
 
